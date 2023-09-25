@@ -345,8 +345,8 @@ int main() {
 char resp = 'y';
 while (resp == 'y') {
 	cout << " //// -- Calculadora de subredes IPv4 -- \\\\\\\\" << endl;
-	cout << "||||  ----- Amezquita Lopez Jose Antonio ----- ||||" << endl;
-	cout << " \\\\\\\\ ----- Grupo 5CV2 ---- ////" << endl;
+	cout << "||||  -----        REDES 2             ----- ||||" << endl;
+	
 	cout << endl << endl;
 
 		// Obtener octetos de la direccion IP //
