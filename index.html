@@ -281,9 +281,7 @@
           // Mostrar la clase de red
           const networkClass = document.getElementById("networkClass");
           networkClass.textContent = `Clase de red: Clase ${ipClase}`;
-          
-      });
-      const subredes = [];
+          const subredes = [];
 
         for (let i = 0; i < numSubredes; i++) {
             const netIDSubred = obtenerNetIDSubred(decimalNetID, netInc, i);
@@ -300,6 +298,9 @@
             subredList.appendChild(listItem);
         });
   
+          
+      });
+      
       // Función para obtener el network ID de una subred
       function obtenerNetIDSubred(decimalNetID, netInc, subredIndex) {
           return decimalNetID.map((octeto, index) => {
