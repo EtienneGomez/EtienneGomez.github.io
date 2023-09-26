@@ -29,38 +29,25 @@
   
           // Función para obtener octetos de una dirección IP
           function obtenerOctetosIP(ip) {
-              const octetosIP = ip.split('.').map(Number);
-              return octetosIP;
+              return ip.split('.').map(Number);
           }
   
           // Función para obtener octetos de una máscara de red
           function obtenerOctetosMascara(mascara) {
-              const octetosMascara = mascara.split('.').map(Number);
-              return octetosMascara;
+              return mascara.split('.').map(Number);
           }
   
           // Función para calcular la clase de una dirección IP
           function calcClase(octetosIP) {
-              if (octetosIP[0] == 10) {
-                  return 1;  // Clase A privada
-              } else if (octetosIP[0] == 172 && octetosIP[1] >= 16 && octetosIP[1] <= 31) {
-                  return 2;  // Clase B privada
-              } else if (octetosIP[0] == 192 && octetosIP[1] == 168) {
-                  return 3;  // Clase C privada
-              } else if (octetosIP[0] == 127) {
-                  return 4;  // Loopback
-              } else if (octetosIP[0] >= 0 && octetosIP[0] < 127) {
-                  return 5;  // Clase A
-              } else if (octetosIP[0] > 127 && octetosIP[0] < 192) {
-                  return 6;  // Clase B
-              } else if (octetosIP[0] > 191 && octetosIP[0] < 224) {
-                  return 7;  // Clase C
-              } else if (octetosIP[0] > 223 && octetosIP[0] < 240) {
-                  return 8;  // Clase D (reservada para multicast)
-              } else if (octetosIP[0] > 239 && octetosIP[0] <= 255) {
-                  return 9;  // Clase E (reservada para experimentación)
+              const primerOcteto = octetosIP[0];
+              if (primerOcteto >= 1 && primerOcteto <= 126) {
+                  return 'A';
+              } else if (primerOcteto >= 128 && primerOcteto <= 191) {
+                  return 'B';
+              } else if (primerOcteto >= 192 && primerOcteto <= 223) {
+                  return 'C';
               } else {
-                  return 0;  // Fuera de rango
+                  return 'Desconocida';
               }
           }
   
@@ -75,31 +62,25 @@
   
           // Función para obtener representación binaria de una dirección IP
           function obtenerBitsIP(octetosIP) {
-              const bitsIP = octetosIP.map(obtenerBitsOcteto);
-              return bitsIP;
+              return octetosIP.map(obtenerBitsOcteto);
           }
   
           // Función para obtener el network ID (AND lógico entre IP y máscara)
           function obtenerNetID(octetosIP, octetosMascara) {
-              const netID = [];
-              for (let i = 0; i < octetosIP.length; i++) {
-                  netID.push(octetosIP[i] & octetosMascara[i]);
-              }
-              return netID;
+              return octetosIP.map((octetoIP, index) => octetoIP & octetosMascara[index]);
           }
   
           // Función para obtener el rango del network ID
           function obtenerNetIDRango(decimalNetID, netInc, decimalMascara) {
-              const netIDFin = [];
-              for (let i = 0; i < decimalNetID.length; i++) {
-                  if (decimalMascara[i] === 255) {
-                      netIDFin.push(decimalNetID[i]);
-                  } else if (decimalMascara[i] < 255 && decimalMascara[i] > 0) {
-                      netIDFin.push((decimalNetID[i] + netInc) - 1);
+              const netIDFin = decimalNetID.map((octeto, index) => {
+                  if (decimalMascara[index] === 255) {
+                      return octeto;
+                  } else if (decimalMascara[index] < 255 && decimalMascara[index] > 0) {
+                      return octeto + netInc - 1;
                   } else {
-                      netIDFin.push(255);
+                      return 255;
                   }
-              }
+              });
               return netIDFin;
           }
   
@@ -142,22 +123,22 @@
               let netBits = 0;
               subClaseMascara.length = 0;
   
-              if (ipClase === 1) {
+              if (ipClase === 'A') {
                   subClaseMascara.push(255);
                   subClaseMascara.push(0);
                   subClaseMascara.push(0);
                   subClaseMascara.push(0);
-              } else if (ipClase === 2) {
+              } else if (ipClase === 'B') {
                   subClaseMascara.push(255);
                   subClaseMascara.push(255);
                   subClaseMascara.push(0);
                   subClaseMascara.push(0);
-              } else if (ipClase === 3) {
+              } else if (ipClase === 'C') {
                   subClaseMascara.push(255);
                   subClaseMascara.push(255);
                   subClaseMascara.push(255);
                   subClaseMascara.push(0);
-              } else if (ipClase === 4 || ipClase === 5) {
+              } else {
                   subClaseMascara.push(decimalMascara[0]);
                   subClaseMascara.push(decimalMascara[1]);
                   subClaseMascara.push(decimalMascara[2]);
@@ -194,20 +175,19 @@
                           case 0:
                               netBits += 0;
                               break;
-                          default:
-                              netBits += 0;
-                              break;
                       }
                   }
               }
   
               const subredes = Math.pow(2, netBits);
+  
               return subredes;
           }
   
           // Función para obtener el número de hosts por subred
           function obtenerHostsPorSubred(decimalMascara) {
               let hostBits = 0;
+  
               for (let i = 0; i < decimalMascara.length; i++) {
                   switch (decimalMascara[i]) {
                       case 255:
@@ -237,12 +217,11 @@
                       case 0:
                           hostBits += 8;
                           break;
-                      default:
-                          hostBits = 0;
-                          break;
                   }
               }
+  
               const hostsPorSubred = Math.pow(2, hostBits) - 2;
+  
               return hostsPorSubred;
           }
   
@@ -282,8 +261,48 @@
               Hosts Usables por Subred: ${numHostsPorSubred}
           `;
   
+          // Mostrar los resultados en el elemento con id "result"
           document.getElementById("result").textContent = resultText;
+  
+          // Mostrar la lista de subredes
+          const subredList = document.getElementById("subredList");
+          subredList.innerHTML = ""; // Limpiar la lista anterior
+  
+          for (let i = 0; i < numSubredes; i++) {
+              const netIDSubred = obtenerNetIDSubred(decimalNetID, netInc, i);
+              const broadcastSubred = obtenerBroadcastSubred(netIDSubred, netInc);
+  
+              const listItem = document.createElement("li");
+              listItem.textContent = `Subred ${i + 1}: ${netIDSubred.join('.')} - ${broadcastSubred.join('.')}`;
+              subredList.appendChild(listItem);
+          }
+  
+          // Mostrar la clase de red
+          const networkClass = document.getElementById("networkClass");
+          networkClass.textContent = `Clase de red: Clase ${ipClase}`;
       });
+  
+      // Función para obtener el network ID de una subred
+      function obtenerNetIDSubred(decimalNetID, netInc, subredIndex) {
+          return decimalNetID.map((octeto, index) => {
+              if (index === 3) {
+                  return octeto + subredIndex * netInc;
+              } else {
+                  return octeto;
+              }
+          });
+      }
+  
+      // Función para obtener el broadcast de una subred
+      function obtenerBroadcastSubred(netIDSubred, netInc) {
+          return netIDSubred.map((octeto, index) => {
+              if (index === 3) {
+                  return octeto + netInc - 1;
+              } else {
+                  return octeto;
+              }
+          });
+      }
   </script>
   
 </body>
