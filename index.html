@@ -267,6 +267,7 @@
           // Mostrar la lista de subredes
           const subredList = document.getElementById("subredList");
           subredList.innerHTML = ""; // Limpiar la lista anterior
+          
   
           for (let i = 0; i < numSubredes; i++) {
               const netIDSubred = obtenerNetIDSubred(decimalNetID, netInc, i);
@@ -280,7 +281,24 @@
           // Mostrar la clase de red
           const networkClass = document.getElementById("networkClass");
           networkClass.textContent = `Clase de red: Clase ${ipClase}`;
+          
       });
+      const subredes = [];
+
+        for (let i = 0; i < numSubredes; i++) {
+            const netIDSubred = obtenerNetIDSubred(decimalNetID, netInc, i);
+            const broadcastSubred = obtenerBroadcastSubred(netIDSubred, netInc);
+
+            subredes.push({
+                netID: netIDSubred.join('.'),
+                broadcast: broadcastSubred.join('.')
+            });
+        }
+        subredes.forEach((subred, index) => {
+            const listItem = document.createElement("li");
+            listItem.textContent = `Subred ${index + 1}: Net ID - ${subred.netID}, Broadcast - ${subred.broadcast}`;
+            subredList.appendChild(listItem);
+        });
   
       // Función para obtener el network ID de una subred
       function obtenerNetIDSubred(decimalNetID, netInc, subredIndex) {
