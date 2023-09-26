@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Subredes IPv4a</title>
+    <title>Calculadora de Subredes IPv4</title>
 </head>
 <body>
-    <h1>Calculadora de Subredes IPv4a</h1>
+    <h1>Calculadora de Subredes IPv4</h1>
     <form id="subnetCalculator">
         <label for="ipAddress">Dirección IP:</label>
         <input type="text" id="ipAddress" name="ipAddress" required><br><br>
@@ -19,6 +19,8 @@
 
     <h2>Resultado:</h2>
     <pre id="result"></pre>
+    <h2>Lista de Subredes:</h2>
+    <ul id="subredList"></ul>
 
     <script>
         document.getElementById("subnetCalculator").addEventListener("submit", function (event) {
