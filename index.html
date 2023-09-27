@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Selección de Clase IP</title>
-    <link rel="stylesheet" type="text/css" href="stle.css">
-    <!--<script src="script.js"></script>-->
-    
+    <title>Calculadora de Subredes IPv4</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-    
     <div class="container">
-        <h2>Selecciona la Clase de IP</h2>
+        <h2>Calculadora de Subredes IPv4</h2>
         <div class="input-group">
             <label for="direccion-ip">Dirección IP:</label>
             <input type="text" id="direccion-ip" placeholder="Ejemplo: 192.168.1.1">
         </div>
         <div class="select-group">
-            <label for="num-subred"> Cuantas subredes que desea calcular:</label>
+            <label for="num-subred">Número de Subredes que desea calcular:</label>
             <select id="subredes" name="subredes">
                 <option value="2">2</option>
                 <option value="4">4</option>
@@ -27,65 +24,100 @@
             </select>
         </div>
         <br><br>
-        <button id="calcular-btn">Calcular Clase de IP</button>
-        <p id="mensaje"></p>
-        <p id="mascara"></p>
-        <p id="subred"></p>
+        <button id="calcular-btn">Calcular Clase de IP y Subredes</button>
+        <div id="resultado" class="resultado"></div>
     </div>
     <script>
-        // Obtén una referencia al botón, la entrada de dirección IP y el elemento select
-const calcularBtn = document.getElementById("calcular-btn");
-const direccionIpInput = document.getElementById("direccion-ip");
-const subredesSelect = document.getElementById("subredes");
-const mensaje = document.getElementById("mensaje");
-const mascara = document.getElementById("mascara");
-const subred = document.getElementById("subred");
+        const calcularBtn = document.getElementById("calcular-btn");
+        const direccionIpInput = document.getElementById("direccion-ip");
+        const subredesSelect = document.getElementById("subredes");
+        const resultado = document.getElementById("resultado");
 
-// Agrega un evento de clic al botón
-calcularBtn.addEventListener("click", function () {
-    // Obtiene el valor ingresado en la entrada de dirección IP
-    const direccionIp = direccionIpInput.value;
+        calcularBtn.addEventListener("click", function () {
+            const direccionIp = direccionIpInput.value;
+            const segmentos = direccionIp.split(".");
+            const numSubredes = parseInt(subredesSelect.value);
 
-    // Divide la dirección IP en segmentos usando el carácter "."
-    const segmentos = direccionIp.split(".");
+            if (segmentos.length === 4) {
+                const primerSegmento = parseInt(segmentos[0]);
+                let claseIp = "";
+                let mascara = "";
 
-    // Verifica si el primer segmento está en el rango 0-127, 128-191, o 192-255 y muestra la clase de IP y la máscara correspondiente
-    if (segmentos.length === 4) {
-        const primerSegmento = parseInt(segmentos[0]);
-        if (primerSegmento >= 0 && primerSegmento <= 127) {
-            mensaje.textContent = "Clase de IP: A";
-            mascara.textContent = "Máscara de Red: 255.0.0.0";
-        } else if (primerSegmento >= 128 && primerSegmento <= 191) {
-            mensaje.textContent = "Clase de IP: B";
-            mascara.textContent = "Máscara de Red: 255.255.0.0";
-        } else if (primerSegmento >= 192 && primerSegmento <= 255) {
-            mensaje.textContent = "Clase de IP: C";
-            mascara.textContent = "Máscara de Red: 255.255.255.0";
-        }
-    } else {
-        mensaje.textContent = "Dirección IP no válida";
-        mascara.textContent = "";
-        
-    }
+                if (primerSegmento >= 0 && primerSegmento <= 127) {
+                    claseIp = "A";
+                    mascara = "255.0.0.0";
+                } else if (primerSegmento >= 128 && primerSegmento <= 191) {
+                    claseIp = "B";
+                    mascara = "255.255.0.0";
+                } else if (primerSegmento >= 192 && primerSegmento <= 255) {
+                    claseIp = "C";
+                    mascara = "255.255.255.0";
+                }
 
-    // Obtiene el número de subredes seleccionado del elemento select
-    const numSubredes = parseInt(subredesSelect.value);
+                const octetosIP = segmentos.map(Number);
+                const octetosMascara = mascara.split(".").map(Number);
 
-    // Calcula el tamaño de cada subred en función del número de subredes
-    const direccion = direccionIp.split('.');
-    const subredSize = 256 / numSubredes;
+                const direccionBinaria = octetosIP
+                    .map((octeto) => {
+                        return octeto.toString(2).padStart(8, "0");
+                    })
+                    .join(".");
 
-    // Muestra la información de las subredes
-    let subredInfo = "Subredes:";
-    for (let i = 0; i < numSubredes; i++) {
-        const subredInicio = i * subredSize;
-        const subredFin = (i + 1) * subredSize - 1;
-        subredInfo += `\nSubred ${i + 1}: ${direccion[0]}.${direccion[1]}.${direccion[2]}.${subredInicio}-${direccion[0]}.${direccion[1]}.${direccion[2]}.${subredFin} `;
-    }
+                const mascaraBinaria = octetosMascara
+                    .map((octeto) => {
+                        return octeto.toString(2).padStart(8, "0");
+                    })
+                    .join(".");
 
-    subred.textContent = subredInfo;
-});
+                const netID = octetosIP.map((octeto, index) => octeto & octetosMascara[index]);
+                const netIDBinario = netID
+                    .map((octeto) => {
+                        return octeto.toString(2).padStart(8, "0");
+                    })
+                    .join(".");
 
+                const netIDRango = [...netID];
+                netIDRango[3] = netID[3] + 1;
+                const broadcast = netIDRango.map((octeto, index) => {
+                    if (index === 3) {
+                        return octeto - 1;
+                    } else {
+                        return octeto;
+                    }
+                });
+                const broadcastBinario = broadcast
+                    .map((octeto) => {
+                        return octeto.toString(2).padStart(8, "0");
+                    })
+                    .join(".");
+
+                const incrementoSubred = 256 / numSubredes;
+
+                const subredInfo = [];
+                for (let i = 0; i < numSubredes; i++) {
+                    const subredInicio = netID[3] + i * incrementoSubred;
+                    const subredFin = netID[3] + (i + 1) * incrementoSubred - 1;
+                    subredInfo.push(`Subred ${i + 1}: ${netID[0]}.${netID[1]}.${netID[2]}.${subredInicio} - ${netID[0]}.${netID[1]}.${netID[2]}.${subredFin}`);
+                }
+
+                resultado.innerHTML = `
+                    <p>Dirección IP ingresada: ${direccionIp}</p>
+                    <p>Clase de IP: Clase ${claseIp}</p>
+                    <p>Máscara de Red: ${mascara}</p>
+                    <p>Representación Binaria de la Dirección IP: ${direccionBinaria}</p>
+                    <p>Representación Binaria de la Máscara de Red: ${mascaraBinaria}</p>
+                    <p>Network ID: ${netID.join(".")}</p>
+                    <p>Rango del Network ID: ${netID.join(".")} - ${broadcast.join(".")}</p>
+                    <p>Incremento de Subred: ${incrementoSubred}</p>
+                    <p>Número de Subredes: ${numSubredes}</p>
+                    <p>Hosts Usables por Subred: ${incrementoSubred - 2}</p>
+                    <h3>Lista de Subredes:</h3>
+                    <ul>${subredInfo.map((info) => `<li>${info}</li>`).join("")}</ul>
+                `;
+            } else {
+                resultado.innerHTML = "Dirección IP no válida";
+            }
+        });
     </script>
 </body>
 </html>
